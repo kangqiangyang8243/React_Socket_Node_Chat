@@ -2,11 +2,13 @@ import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import InputBox from "./InputBox";
 import TimeAgo from "react-timeago";
+import { v4 as uuidv4 } from "uuid";
 
-function ChatContainer({ currentChatUser }) {
+function ChatContainer({ currentChatUser, socketRef }) {
   const [message, setMessage] = React.useState([]);
   const [currentUser, setCurrentUser] = useState();
   const scrollRef = useRef(null);
+  const [arrivalMessage, setArrivalMessage] = useState(null);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -32,6 +34,7 @@ function ChatContainer({ currentChatUser }) {
           {
             from: currentUser._id,
             to: currentChatUser._id,
+            sendDate: Date.now(),
           }
         );
         setMessage(res.data);
@@ -42,6 +45,13 @@ function ChatContainer({ currentChatUser }) {
 
   const handleMessage = async (msg) => {
     //   setMessage([...message, msg]);
+    await socketRef.current.emit("send_message", {
+      to: currentChatUser._id,
+      from: currentUser._id,
+      msg,
+    });
+
+    // console.log(res1);
     const res = await axios.post(
       process.env.REACT_APP_BASE_URL + "/messages/addMsg",
       {
@@ -53,11 +63,36 @@ function ChatContainer({ currentChatUser }) {
     );
 
     // console.log(res.data);
+    const msgs = [...message];
+    msgs.push({ fromSelf: true, message: msg, sendDate: Date.now() });
 
-    setMessage([...message, res.data]);
+    setMessage(msgs);
   };
+  //   console.log(socketRef.current.on);
+
+  useEffect(() => {
+    if (socketRef.current) {
+      socketRef.current.on("receive_message", (msg) => {
+        // console.log(msg);
+        setArrivalMessage({
+          fromSelf: false,
+          message: msg,
+          sendDate: Date.now(),
+        });
+      });
+
+      //   console.log(res);
+    }
+  }, []);
 
   //   console.log(message);
+  useEffect(() => {
+    arrivalMessage && setMessage((prev) => [...prev, arrivalMessage]);
+  }, [arrivalMessage]);
+
+  //   console.log(message);
+
+  // console.log(arrivalMessage.message);
 
   return (
     <div className="w-full h-full font-serif text-white flex flex-col items-center">
@@ -71,10 +106,10 @@ function ChatContainer({ currentChatUser }) {
         <div className="flex flex-col">
           <h3 className="text-xl ">{currentChatUser?.username}</h3>
           {/* <p className="text-sm text-gray-300 ">{currentChatUser?.loginDate}</p> */}
-          <TimeAgo
+          {/* <TimeAgo
             className="text-sm text-gray-300"
             date={currentChatUser?.loginDate}
-          />
+          /> */}
         </div>
       </div>
 
@@ -87,15 +122,15 @@ function ChatContainer({ currentChatUser }) {
         {message.map((msg) => (
           <div
             ref={scrollRef}
-            key={msg._id}
+            key={uuidv4()}
             // className="w-full bg-red-100 flex flex-col items-start "
             className={`w-full items-start gap-3 flex mb-6 px-3 ${
-              msg?.sender === currentUser?._id ? `flex-row-reverse` : `flex-row`
+              msg?.fromSelf ? `flex-row-reverse` : `flex-row`
             }`}
           >
             <img
               src={
-                msg?.sender === currentUser?._id
+                msg?.fromSelf
                   ? currentUser?.avatarImage
                   : currentChatUser?.avatarImage
               }
@@ -104,11 +139,11 @@ function ChatContainer({ currentChatUser }) {
             />
             <div
               className={`flex flex-col ${
-                msg?.sender === currentUser?._id ? `items-end` : `items-start`
+                msg?.fromSelf ? `items-end` : `items-start`
               }`}
             >
               <p className=" p-2 text-lg rounded-lg my-1 shadow-lg shadow-[#5a64da]">
-                {msg?.message?.text}
+                {msg?.message}
               </p>
               {/* <p>{DateChange(msg?.sendDate)}</p> */}
               <TimeAgo className="text-xs text-gray-300" date={msg?.sendDate} />

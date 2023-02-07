@@ -1,11 +1,14 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ChatContainer from "../components/ChatContainer";
 import ContactUsers from "../components/ContactUsers";
 import Welcome from "../components/Welcome";
+import { io } from "socket.io-client";
 
 function ChatPage() {
+  const socketRef = useRef(null);
+
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState();
   const [users, setUsers] = useState();
@@ -24,6 +27,13 @@ function ChatPage() {
   }, []);
 
   // console.log(currentUser);
+
+  useEffect(() => {
+    if (currentUser) {
+      socketRef.current = io(process.env.REACT_APP_SOCKET_API);
+      socketRef.current.emit("add_user", currentUser._id);
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     if (currentUser) {
@@ -63,7 +73,10 @@ function ChatPage() {
           {currentChatUser === undefined ? (
             <Welcome currentUser={currentUser} />
           ) : (
-            <ChatContainer currentChatUser={currentChatUser} />
+            <ChatContainer
+              currentChatUser={currentChatUser}
+              socketRef={socketRef}
+            />
           )}
         </div>
       </div>
