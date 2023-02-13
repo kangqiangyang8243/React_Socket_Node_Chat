@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import InputBox from "./InputBox";
 import TimeAgo from "react-timeago";
 import { v4 as uuidv4 } from "uuid";
+import ReactTimeago from "react-timeago";
 
 function ChatContainer({ currentChatUser, socketRef }) {
   const [message, setMessage] = React.useState([]);
@@ -24,7 +25,7 @@ function ChatContainer({ currentChatUser, socketRef }) {
   }, []);
 
   //   console.log(currentChatUser);
-  //   console.log(currentUser);
+  // console.log(currentUser);
 
   useEffect(() => {
     if (currentUser && currentChatUser) {
@@ -34,7 +35,6 @@ function ChatContainer({ currentChatUser, socketRef }) {
           {
             from: currentUser._id,
             to: currentChatUser._id,
-            sendDate: Date.now(),
           }
         );
         setMessage(res.data);
@@ -42,6 +42,7 @@ function ChatContainer({ currentChatUser, socketRef }) {
       fetchMessages();
     }
   }, [currentChatUser, currentUser]);
+  console.log(message);
 
   const handleMessage = async (msg) => {
     //   setMessage([...message, msg]);
@@ -58,8 +59,12 @@ function ChatContainer({ currentChatUser, socketRef }) {
         from: currentUser._id,
         to: currentChatUser._id,
         message: msg,
-        sendDate: Date.now(),
       }
+    );
+
+    await axios.put(
+      process.env.REACT_APP_BASE_URL +
+        `/users/updateLoginDate/${currentUser?._id}`
     );
 
     // console.log(res.data);
@@ -106,10 +111,17 @@ function ChatContainer({ currentChatUser, socketRef }) {
         <div className="flex flex-col">
           <h3 className="text-xl ">{currentChatUser?.username}</h3>
           {/* <p className="text-sm text-gray-300 ">{currentChatUser?.loginDate}</p> */}
-          {/* <TimeAgo
-            className="text-sm text-gray-300"
-            date={currentChatUser?.loginDate}
-          /> */}
+          {currentChatUser?.loginDate ? (
+            <p className="text-sm text-gray-300">
+              Last Seen:{" "}
+              <ReactTimeago
+                className="text-lg text-gray-300"
+                date={currentChatUser?.loginDate}
+              />
+            </p>
+          ) : (
+            "UnActive"
+          )}
         </div>
       </div>
 
