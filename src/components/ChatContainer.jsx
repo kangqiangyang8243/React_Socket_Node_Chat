@@ -4,13 +4,19 @@ import InputBox from "./InputBox";
 import TimeAgo from "react-timeago";
 import { v4 as uuidv4 } from "uuid";
 import ReactTimeago from "react-timeago";
+import { BiArrowBack } from "react-icons/bi";
 
-function ChatContainer({ currentChatUser, socketRef }) {
+function ChatContainer({
+  currentChatUser,
+  setOpenSwitch,
+  openSwitch,
+  socketRef,
+}) {
   const [message, setMessage] = React.useState([]);
   const [currentUser, setCurrentUser] = useState();
   const scrollRef = useRef(null);
   const [arrivalMessage, setArrivalMessage] = useState(null);
-
+  // console.log(openSwitch);
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [message]);
@@ -102,26 +108,32 @@ function ChatContainer({ currentChatUser, socketRef }) {
   return (
     <div className="w-full h-full font-serif text-white flex flex-col items-center">
       {/* header */}
-      <div className="flex items-center  text-xl px-6 py-4 gap-3 shadow-[#5a64da] shadow-lg  w-full">
-        <img
-          src={currentChatUser?.avatarImage}
-          alt="currentChatUser_avatar"
-          className="w-14 h-14 shadow-md rounded-full shadow-[#5a64da]"
+      <div className="flex items-center   text-xl px-6 py-4 gap-3 shadow-[#5a64da] shadow-lg  w-full">
+        <BiArrowBack
+          onClick={() => setOpenSwitch(false)}
+          className="md:hidden cursor-pointer rounded-full h-7 w-7  gap-3 shadow-[#5a64da] shadow-lg"
         />
-        <div className="flex flex-col">
-          <h3 className="text-xl ">{currentChatUser?.username}</h3>
-          {/* <p className="text-sm text-gray-300 ">{currentChatUser?.loginDate}</p> */}
-          {currentChatUser?.loginDate ? (
-            <p className="text-sm text-gray-300">
-              Last Seen:{" "}
-              <ReactTimeago
-                className="text-lg text-gray-300"
-                date={currentChatUser?.loginDate}
-              />
-            </p>
-          ) : (
-            "UnActive"
-          )}
+        <div className="flex items-center gap-3">
+          <img
+            src={currentChatUser?.avatarImage}
+            alt="currentChatUser_avatar"
+            className="w-14 h-14 shadow-md rounded-full shadow-[#5a64da]"
+          />
+          <div className="flex flex-col">
+            <h3 className="text-xl ">{currentChatUser?.username}</h3>
+            {/* <p className="text-sm text-gray-300 ">{currentChatUser?.loginDate}</p> */}
+            {currentChatUser?.loginDate ? (
+              <p className="text-sm text-gray-300">
+                Last Seen:{" "}
+                <ReactTimeago
+                  className="text-lg text-gray-300"
+                  date={currentChatUser?.loginDate}
+                />
+              </p>
+            ) : (
+              "UnActive"
+            )}
+          </div>
         </div>
       </div>
 

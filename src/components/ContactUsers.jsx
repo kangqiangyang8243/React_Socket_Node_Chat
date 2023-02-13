@@ -4,7 +4,12 @@ import { BiPowerOff } from "react-icons/bi";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-function ContactUsers({ users, currentUser, changeCurrentChatUser }) {
+function ContactUsers({
+  users,
+  currentUser,
+  setOpenSwitch,
+  changeCurrentChatUser,
+}) {
   const [currentSelected, setCurrentSelected] = useState();
   const navigate = useNavigate();
   //   console.log(users);
@@ -12,6 +17,7 @@ function ContactUsers({ users, currentUser, changeCurrentChatUser }) {
     setCurrentSelected(index);
     // click different user and change current chat user to the user you select
     changeCurrentChatUser(user);
+    setOpenSwitch(true);
   };
 
   const LogoutBtn = () => {
